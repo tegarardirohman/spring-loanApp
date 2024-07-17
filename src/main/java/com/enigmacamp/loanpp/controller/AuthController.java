@@ -22,7 +22,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping(APIUrl.AUTH_API)
 @RequiredArgsConstructor
-@SecurityRequirement(name = "Authorization")
 public class AuthController {
     public final AuthService authService;
 
