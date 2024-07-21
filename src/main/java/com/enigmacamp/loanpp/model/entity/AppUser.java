@@ -9,6 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @Data
 @Builder
-public class AppUser implements UserDetails {
+public class AppUser implements UserDetails, Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -34,7 +35,7 @@ public class AppUser implements UserDetails {
 //        return simplegrantedAuthorities;
 
         return roles.stream()
-                .map(role -> new SimpleGrantedAuthority(role.getRole().toString()))
+                .map(role -> new SimpleGrantedAuthority(role.getRole()))
                 .collect(Collectors.toList());
     }
 

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @Entity
 @Table(name = "t_guarantee_picture")
-public class guaranteePicture {
+public class GuaranteePicture {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;

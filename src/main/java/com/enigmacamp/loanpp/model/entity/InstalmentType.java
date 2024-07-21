@@ -13,18 +13,23 @@ import lombok.NoArgsConstructor;
 @Builder
 @Entity
 @Table(name = "t_instalment_type")
-class InstalmentType {
+public class InstalmentType {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
-    @Column(name = "instalment_type")
+    @Column(name = "instalment_type", unique = true, nullable = false)
+    @Enumerated(EnumType.STRING)
     private EInstalmentType instalmentType;
+
+    public enum EInstalmentType {
+        ONE_MONTH,
+        THREE_MONTHS,
+        SIXTH_MONTHS,
+        NINE_MONTHS,
+        TWELVE_MONTHS
+    }
+
 }
 
-enum EInstalmentType {
-    ONE_MONTH,
-    THREE_MONTHS,
-    SIXTH_MONTHS,
-    NINE_MONTHS,
-    TWELVE_MONTHS
-}
+
+

@@ -5,6 +5,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.enigmacamp.loanpp.model.entity.AppUser;
+import com.enigmacamp.loanpp.model.entity.Role;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -16,11 +17,11 @@ import java.util.Map;
 
 @Component
 public class JwtUtil {
-    @Value("${app.tokonyadiashop.jwt.jwt-secret}")
+    @Value("${app.loanapp.jwt.jwt-secret}")
     private String jwtSecret;
-    @Value("${app.tokonyadiashop.jwt.app-name}")
+    @Value("${app.loanapp.jwt.app-name}")
     private String appName;
-    @Value("${app.tokonyadiashop.jwt.expired}")
+    @Value("${app.loanapp.jwt.expired}")
     private long jwtExpired;
 
     private Algorithm algorithm;
@@ -31,12 +32,13 @@ public class JwtUtil {
     }
 
     public String generateToken(AppUser appUser) {
+
         return JWT.create()
                 .withIssuer(appName)
                 .withSubject(appUser.getId())
                 .withExpiresAt(Instant.now().plusSeconds(jwtExpired))
                 .withIssuedAt(Instant.now())
-                .withClaim("role", appUser.getRoles().toString())
+                .withClaim("role", appUser.getRoles().stream().map(Role::getRole).toList())
                 .sign(algorithm);
     }
 
@@ -52,7 +54,8 @@ public class JwtUtil {
 
         Map<String, String> userInfo = new HashMap<>();
         userInfo.put("userId", decodedJWT.getSubject());
-        userInfo.put("role", decodedJWT.getClaim("role").asString());
+        userInfo.put("role", String.valueOf(decodedJWT.getClaim("role")));
+
         return userInfo;
     }
 }

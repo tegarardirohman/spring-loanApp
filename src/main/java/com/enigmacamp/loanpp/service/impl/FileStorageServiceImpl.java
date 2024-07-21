@@ -6,6 +6,8 @@ import com.enigmacamp.loanpp.repository.CustomerRepository;
 import com.enigmacamp.loanpp.repository.ProfilePictureRepository;
 import com.enigmacamp.loanpp.service.FileStorageService;
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,6 +25,7 @@ import java.util.Objects;
 
 @Service
 public class FileStorageServiceImpl implements FileStorageService {
+
     private final Path fileStorageLocation;
     private final ProfilePictureRepository profilePictureRepository;
     private final CustomerRepository customerRepository;
@@ -39,7 +42,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     public String getFileExtension(MultipartFile file) {
-        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+        String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
         return StringUtils.getFilenameExtension(fileName);
     }
 
@@ -57,17 +60,27 @@ public class FileStorageServiceImpl implements FileStorageService {
             // get Customer data
             Customer customer = customerRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
 
-            // build profile picture
-            ProfilePicture profile = ProfilePicture.builder()
-                    .url("/api/customers/" + id + "/avatar")
-                    .size((int) file.getSize())
-                    .contentType(file.getContentType())
-                    .name(idFileName)
-                    .build();
+            ProfilePicture profilePicture = profilePictureRepository.findByName(idFileName);
+
+            ProfilePicture profile;
+
+            if (profilePicture == null) {
+                // build profile picture
+                profile = ProfilePicture.builder()
+                        .url("/api/customers/" + id + "/avatar")
+                        .size((int) file.getSize())
+                        .contentType(file.getContentType())
+                        .name(idFileName)
+                        .build();
+            } else {
+                profile = profilePicture;
+                profile.setSize((int) file.getSize());
+                profile.setContentType(file.getContentType());
+            }
 
             // save and flush
             customer.setProfilePicture(profile);
-            profilePictureRepository.save(profile);
+            profilePictureRepository.saveAndFlush(profile);
             customerRepository.saveAndFlush(customer);
 
 

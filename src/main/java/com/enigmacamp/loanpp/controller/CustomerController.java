@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,16 +24,16 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/customers")
 @RequiredArgsConstructor
-@SecurityRequirement(name = "Authorization")
+@SecurityRequirement(name = "Bearer Authentication")
 public class CustomerController {
     private final CustomerService customerService;
-    private final FileStorageService fileStorageService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<CommonResponse<Customer>> getCustomerById(@PathVariable("id") String id) {
-        Customer customer = customerService.findById(id);
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_STAFF','ROLE_CUSTOMER')")
+    public ResponseEntity<CommonResponse<CustomerResponse>> getCustomerById(@PathVariable("id") String id) {
+        CustomerResponse customer = customerService.findById(id);
 
-        CommonResponse<Customer> response = CommonResponse.<Customer>builder()
+        CommonResponse<CustomerResponse > response = CommonResponse.<CustomerResponse>builder()
                 .message("Success")
                 .data(Optional.of(customer))
                 .build();
@@ -42,6 +43,7 @@ public class CustomerController {
 
 
     @GetMapping()
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_STAFF','ROLE_CUSTOMER')")
     public ResponseEntity<CommonResponse<List<CustomerResponse>>> getAllCustomer() {
         List<CustomerResponse> customers = customerService.findAll();
 
@@ -54,11 +56,12 @@ public class CustomerController {
     }
 
     @PutMapping()
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_STAFF','ROLE_CUSTOMER')")
     public ResponseEntity<CommonResponse<CustomerResponse>> updateCustomer(@RequestBody CustomerRequest customerRequest) {
         CustomerResponse customerResponse = customerService.update(customerRequest);
 
         CommonResponse<CustomerResponse> response = CommonResponse.<CustomerResponse>builder()
-                .message("Sucessfully update customer")
+                .message("Successfully update customer")
                 .data(Optional.of(customerResponse))
                 .build();
 
@@ -66,6 +69,7 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_STAFF','ROLE_CUSTOMER')")
     public ResponseEntity<CommonResponse> deleteCustomer(@PathVariable("id") String id) {
         customerService.deleteById(id);
 
@@ -76,37 +80,5 @@ public class CustomerController {
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
-    @GetMapping("/{customerId}/avatar")
-    public ResponseEntity<byte[]> getImage(@PathVariable String customerId) {
-
-        return fileStorageService.getImage(customerId);
-    }
-
-    @PostMapping("/{customerId}/upload/avatar")
-    public ResponseEntity<CommonResponse<AvatarResponse>> uploadAvatar(@RequestParam("avatar") MultipartFile avatar, @PathVariable String customerId) {
-        String userId = customerId;
-        String fileName = fileStorageService.storeFile(avatar, userId);
-
-        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path(APIUrl.CUSTOMER_API)
-                .path(customerId)
-                .path("/avatar/")
-                .toUriString();
-
-        AvatarResponse avatarResponse = AvatarResponse.builder()
-                .url(fileDownloadUri)
-                .name(fileName)
-                .build();
-
-        CommonResponse<AvatarResponse> commonResponse = CommonResponse.<AvatarResponse>builder()
-                .message("File uploaded successfully")
-                .data(Optional.of(avatarResponse))
-                .build();
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(commonResponse);
-    }
-
-
 
 }

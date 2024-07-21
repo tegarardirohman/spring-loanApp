@@ -9,8 +9,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -21,8 +24,9 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
-//@AllArgsConstructor
+
 @EnableWebSecurity
+@EnableMethodSecurity
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfiguration {
@@ -31,23 +35,9 @@ public class SecurityConfiguration {
 
     private static final String[] WHITE_LIST_URL = {
             "/api/**",
-            "/api/auth/**",
             "/v3/api-docs/**",
             "/swagger-resources/**",
-            "/swagger-ui/**",
-            "/api/customer/**"
-    };
-
-    private static final String[] CUSTOMER_WHITE_LIST = {
-            "/api/v1/test/customer",
-            "/api/v1/customer/**",
-            "/api/v1/transaction"
-    };
-
-    private static final String[] SELLER_WHITE_LIST = {
-            "/api/v1/product",
-            "/api/v1/test/customer",
-            "/api/v1/transaction"
+            "/swagger-ui/**"
     };
 
     @Bean
@@ -60,7 +50,6 @@ public class SecurityConfiguration {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -70,15 +59,12 @@ public class SecurityConfiguration {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(req -> req.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers(WHITE_LIST_URL).permitAll()
-                        .requestMatchers(CUSTOMER_WHITE_LIST).hasAuthority("CUSTOMER")
-                        .requestMatchers(SELLER_WHITE_LIST).hasAuthority("SELLER")
                         .anyRequest()
                         .authenticated()
                 )
                 .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception ->
                         exception.accessDeniedHandler(accessDeniedHandler())
-                                .authenticationEntryPoint(authenticationEntryPoint())
                 );
 
         return http.build();
@@ -93,14 +79,6 @@ public class SecurityConfiguration {
         };
     }
 
-
-    @Bean
-    public AuthenticationEntryPoint authenticationEntryPoint() {
-        return (request, response, authException) -> {
-            response.setContentType("application/json");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("{\"code\":401,\"message\":\"Unauthorized: " + authException.getMessage() + "\"}");
-        };
-    }
-
 }
+//@AllArgsConstructor
+

@@ -45,7 +45,7 @@ class AuthControllerTest {
     void registerCustomerSuccess() throws Exception {
 
         User user = User.builder()
-                .email("tegarrrr@gmail.com")
+                .email("tegar@gmail.com")
                 .password("Admin#1234")
                 .build();
 
@@ -76,15 +76,15 @@ class AuthControllerTest {
     }
 
     @Test
-    void registerNonCustomerSuccess() throws Exception {
+    void registerAdminSuccess() throws Exception {
 
         AuthRequest authRequest = AuthRequest.builder()
-                .email("tegar@gmail.com")
-                .password("123445")
+                .email("admin@gmail.com")
+                .password("admin")
                 .build();
 
         mockMvc.perform(
-                post("/api/v1/auth/signup/admin")
+                post("/api/auth/signup/admin")
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(authRequest))
@@ -127,14 +127,14 @@ class AuthControllerTest {
 //    }
 
     @Test
-    void loginSuccess() throws Exception {
+    void loginCustomerSuccess() throws Exception {
         AuthRequest authRequest = AuthRequest.builder()
                 .email("tegar@gmail.com")
-                .password("123445")
+                .password("Admin#1234")
                 .build();
 
         mockMvc.perform(
-                post("/api/v1/auth/login")
+                post("/api/auth/login")
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(authRequest))
@@ -144,6 +144,32 @@ class AuthControllerTest {
         ).andDo(result -> {
             CommonResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), CommonResponse.class);
 
+            System.out.println(response.getData());
+            assertEquals("Login Success", response.getMessage());
+            assertNotNull(response.getData());
+        });
+
+    }
+
+    @Test
+    void loginAdminSuccess() throws Exception {
+        AuthRequest authRequest = AuthRequest.builder()
+                .email("admin@gmail.com")
+                .password("admin")
+                .build();
+
+        mockMvc.perform(
+                post("/api/auth/login")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(authRequest))
+
+        ).andExpectAll(
+                status().isOk()
+        ).andDo(result -> {
+            CommonResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), CommonResponse.class);
+
+            System.out.println(response.getData());
             assertEquals("Login Success", response.getMessage());
             assertNotNull(response.getData());
         });

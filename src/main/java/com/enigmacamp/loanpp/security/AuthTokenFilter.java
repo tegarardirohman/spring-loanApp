@@ -7,6 +7,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -35,13 +36,17 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+
         try {
             String headerAuth = request.getHeader(HttpHeaders.AUTHORIZATION);
 
             String clientToken = null;
             if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
                 clientToken = headerAuth.substring(7);
+            } else {
+                System.out.println("Token null");
             }
+
 
             if (clientToken != null && jwtUtil.verifyJwtToken(clientToken)) {
                 Map<String, String> userInfo = jwtUtil.getUserInfoByToken(clientToken);
@@ -51,6 +56,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource());
 
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+                System.out.println(user.toString());
+                System.out.println("TETTTTT");
 
                 request.setAttribute("userId", userInfo.get("userId"));
             }

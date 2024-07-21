@@ -7,7 +7,6 @@ import com.enigmacamp.loanpp.model.dto.response.CommonResponse;
 import com.enigmacamp.loanpp.model.dto.response.AuthResponse;
 import com.enigmacamp.loanpp.model.entity.Role;
 import com.enigmacamp.loanpp.service.AuthService;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +27,22 @@ public class AuthController {
     @PostMapping("/signup/admin")
     public ResponseEntity<CommonResponse<AuthResponse>> register(@Validated @RequestBody AuthRequest request) {
         Role.ERole role = Role.ERole.ROLE_ADMIN;
+
+        AuthResponse authResponse = authService.register(request, role);
+
+        CommonResponse<AuthResponse> response = CommonResponse.<AuthResponse>builder()
+                .message("Register Sucess")
+                .data(Optional.of(authResponse))
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
+    }
+
+    @PostMapping("/signup/staff")
+    public ResponseEntity<CommonResponse<AuthResponse>> registerStaff(@Validated @RequestBody AuthRequest request) {
+        Role.ERole role = Role.ERole.ROLE_STAFF;
 
         AuthResponse authResponse = authService.register(request, role);
 

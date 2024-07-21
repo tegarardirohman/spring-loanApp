@@ -73,7 +73,7 @@ public class AuthServiceImpl implements AuthService {
 
         return AuthResponse.builder()
                 .email(user.getEmail())
-                .role(user.getRoles())
+                .role(user.getRoles().stream().map(Role::getRole).toList())
                 .build();
     }
 
@@ -94,7 +94,6 @@ public class AuthServiceImpl implements AuthService {
         List<Role> roles = new ArrayList<>();
         roles.add(role);
 
-        System.out.println("Roles: \n" + roles);
 
         // user
         User user = request.getUser();
@@ -116,35 +115,26 @@ public class AuthServiceImpl implements AuthService {
 
         return AuthResponse.builder()
                 .email(user.getEmail())
-                .role(user.getRoles())
+                .role(user.getRoles().stream().map(Role::getRole).toList())
                 .build();
     }
-
-
 
     @Override
     public AuthResponse login(AuthRequest loginRequest) {
 
-        System.out.println("email: " + loginRequest.getEmail());
-        System.out.println("password: " + loginRequest.getPassword());
-
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
         );
-        System.out.println("Authentication: " + authentication.getPrincipal());
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         AppUser appUser = (AppUser) authentication.getPrincipal();
 
-        System.out.println("hallo aku app User");
-        System.out.println(appUser.toString());
-
         String token = jwtUtil.generateToken(appUser);
 
         return AuthResponse.builder()
                 .email(appUser.getEmail())
-                .role(appUser.getRoles())
+                .role(appUser.getRoles().stream().map(Role::getRole).toList())
                 .token(token)
                 .build();
     }

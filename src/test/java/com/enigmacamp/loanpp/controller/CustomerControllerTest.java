@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
@@ -51,6 +52,8 @@ class CustomerControllerTest {
     void getAllCustomer() throws Exception {
         mockMvc.perform(
                 get("/api/customers")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJcIkxvYW4gQXBwXCIiLCJzdWIiOiI2MzUxNzUzYi01NWI3LTQ5MjYtOWU2MC1lOGYwZjA0MDRhMTgiLCJleHAiOjE3MjE4OTA4OTEsImlhdCI6MTcyMTUzMDg5MSwicm9sZSI6WyJST0xFX0FETUlOIl19.Cpcbd5Z5iihUBlc2X-0FxsfrvbFlx-qHW97izaYfs3k")
+
         ).andExpectAll(
                 status().isOk()
         ).andDo(result -> {

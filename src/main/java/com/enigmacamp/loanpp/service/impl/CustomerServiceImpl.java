@@ -21,10 +21,10 @@ import java.util.List;
 public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
 
-
     @Override
-    public Customer findById(String id) {
-        return customerRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
+    public CustomerResponse findById(String id) {
+
+        return convertToCustomerResponse(customerRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found")));
     }
 
     @Override
@@ -67,7 +67,8 @@ public class CustomerServiceImpl implements CustomerService {
     @Transactional
     public void deleteById(String id) {
         Customer customer = customerRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
-        customerRepository.delete(customer);
+        customer.setStatus("deleted");
+        customerRepository.saveAndFlush(customer);
     }
 
 

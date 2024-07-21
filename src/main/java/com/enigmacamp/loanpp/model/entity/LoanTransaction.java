@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Cascade;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "trx_loan")
-class LoanTransaction {
+public class LoanTransaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -38,7 +39,7 @@ class LoanTransaction {
     private String approvedBy;
     private ApprovalStatus approvalStatus; // enum
 
-    @OneToMany(mappedBy = "loanTransaction")
+    @OneToMany(mappedBy = "loanTransaction", cascade = CascadeType.ALL)
     private List<LoanTransactionDetail> loanTransactionDetails;
 
     private Long createdAt;
@@ -54,9 +55,10 @@ class LoanTransaction {
     protected void onUpdate() {
         this.updatedAt = System.currentTimeMillis();
     }
+
+    public enum ApprovalStatus {
+        APPROVED,
+        REJECTED
+    }
 }
 
-enum ApprovalStatus {
-    APPROVED,
-    REJECTED
-}
